@@ -44,9 +44,7 @@ func recognizeHandler(w http.ResponseWriter, r *http.Request) {
 	out.Close()
 
 	// Calc songtags
-	res := songtags.ForFile(fp)
-	fmt.Fprintf(w, "Result: ")
-	fmt.Fprintf(w, res)
+	fmt.Fprintf(w, songtags.ForFile(fp))
 }
 
 func main() {

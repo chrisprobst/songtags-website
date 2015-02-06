@@ -1,12 +1,106 @@
- <html>
- <title>Go upload</title>
- <body>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Song Recognizer</title>
 
- <form action="/recognize" method="post" enctype="multipart/form-data">
- <label for="file">Filename:</label>
- <input type="file" name="file" id="file">
- <input type="submit" name="submit" value="Submit">
- </form>
+<script type="text/javascript">
+function fileChange()
+{
+    //FileList Objekt aus dem Input Element mit der ID "fileA"
+    var fileList = document.getElementById("fileA").files;    
+ 
+    //File Objekt (erstes Element der FileList)
+    var file = fileList[0];
+ 
+    //File Objekt nicht vorhanden = keine Datei ausgewählt oder vom Browser nicht unterstützt
+    if(!file)
+        return;
+ 
+    document.getElementById("fileName").innerHTML = 'Dateiname: ' + file.name;
+    document.getElementById("fileSize").innerHTML = 'Dateigröße: ' + file.size + ' B';
+    document.getElementById("fileType").innerHTML = 'Dateitype: ' + file.type;
+    document.getElementById("progress").value = 0;
+    document.getElementById("prozent").innerHTML = "0%";
+}
 
- </body>
- </html>
+var client = null;
+ 
+function uploadFile()
+{
+    //Wieder unser File Objekt
+    var file = document.getElementById("fileA").files[0];
+
+    //FormData Objekt erzeugen
+    var formData = new FormData();
+
+    //XMLHttpRequest Objekt erzeugen
+    client = new XMLHttpRequest();
+ 
+    var prog = document.getElementById("progress");
+ 
+    if(!file)
+        return;
+ 
+    prog.value = 0;
+    prog.max = 100;
+ 
+    //Fügt dem formData Objekt unser File Objekt hinzu
+    formData.append("file", file);
+ 
+    client.onerror = function(e) {
+        alert("onError");
+    };
+ 
+    client.onload = function(e) {
+        document.getElementById("prozent").innerHTML = "100%";
+        prog.value = prog.max;
+    };
+ 
+	client.onreadystatechange = function() {
+	    if (client.readyState == 4) {
+	    	document.getElementById("musicInfo").innerHTML = client.responseText;
+	    }
+	}
+
+    client.upload.onprogress = function(e) {
+        var p = Math.round(100 / e.total * e.loaded);
+        document.getElementById("progress").value = p;            
+        document.getElementById("prozent").innerHTML = p + "%";
+    };
+ 
+    client.onabort = function(e) {
+        alert("Upload abgebrochen");
+    };
+ 
+    client.open("POST", "/recognize");
+    client.send(formData);
+}
+</script>
+
+</head>
+ 
+<body>
+<script type="text/javascript">
+ 
+</script>
+ 
+<form action="" method="post" enctype="multipart/form-data">
+    <input name="file" type="file" id="fileA" onchange="fileChange();"/>
+    <input name="upload" value="Upload" type="button" onclick="uploadFile();" />
+    <input name="abort" value="Abbrechen" type="button" onclick="uploadAbort();" />
+</form>
+<div>
+    <div id="fileName"></div>
+    <div id="fileSize"></div>
+    <div id="fileType"></div>
+    <progress id="progress" style="margin-top:10px"></progress>
+    <span id="prozent"></span>
+
+    <div>Tags:</div>
+    <textarea rows="75" cols="100" id="musicInfo">
+	</textarea>
+</div>
+ 
+</body>
+</html>
